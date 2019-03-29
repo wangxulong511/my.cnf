@@ -1,0 +1,19 @@
+innodb_flush_log_at_trx_commit和sync_binlog 两个参数是控制MySQL磁盘写入策略以及数据安全性的关键参数。
+
+如果innodb_flush_log_at_trx_commit设置为0，log buffer将每秒一次地写入log file中，并且log file的flush(刷到磁盘)操作同时进行.
+该模式下，在事务提交的时候，不会主动触发写入磁盘的操作。
+如果innodb_flush_log_at_trx_commit设置为1，每次事务提交时MySQL都会把log buffer的数据写入log file，并且flush(刷到磁盘)中去.
+如果innodb_flush_log_at_trx_commit设置为2，每次事务提交时MySQL都会把log buffer的数据写入log file.但是flush(刷到磁盘)操作并不会同时进行。
+该模式下,MySQL会每秒执行一次 flush(刷到磁盘)操作。
+
+
+sync_binlog
+
+sync_binlog 的默认值是0，像操作系统刷其他文件的机制一样，MySQL不会同步到磁盘中去而是依赖操作系统来刷新binary log。
+
+当sync_binlog =N (N>0) ，MySQL 在每写N次二进制日志binary log时，会使用fdatasync()函数将它的写二进制日志binary log同步到磁盘中去。
+
+目前我们生产上使用的是
+
+sync_binlog 为默认值
+innodb_flush_log_at_trx_commit 的值为1,每次commit的时候刷新到磁盘
